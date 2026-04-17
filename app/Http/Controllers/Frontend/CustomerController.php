@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\Frontend;
 
-use shurjopayv2\ShurjopayLaravelPackage8\Http\Controllers\ShurjopayController;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Brian2694\Toastr\Facades\Toastr;
@@ -269,9 +267,8 @@ class CustomerController extends Controller
         $shippingcharge = ShippingCharge::where('status', 1)->get();
         $select_charge = ShippingCharge::where('status', 1)->first();
         $bkash_gateway = PaymentGateway::where(['status' => 1, 'type' => 'bkash'])->first();
-        $shurjopay_gateway = PaymentGateway::where(['status' => 1, 'type' => 'shurjopay'])->first();
         Session::put('shipping', $select_charge->amount);
-        return view('frontEnd.layouts.customer.checkout', compact('shippingcharge', 'bkash_gateway', 'shurjopay_gateway'));
+        return view('frontEnd.layouts.customer.checkout', compact('shippingcharge', 'bkash_gateway'));
     }
     public function order_save(Request $request)
     {
@@ -383,29 +380,9 @@ class CustomerController extends Controller
 
         if ($request->payment_method == 'bkash') {
             return redirect('/bkash/checkout-url/create?order_id=' . $order->id);
-        } elseif ($request->payment_method == 'shurjopay') {
-            $info = array(
-                'currency' => "BDT",
-                'amount' => $order->amount,
-                'order_id' => uniqid(),
-                'discsount_amount' => 0,
-                'disc_percent' => 0,
-                'client_ip' => $request->ip(),
-                'customer_name' =>  $request->name,
-                'customer_phone' => $request->phone,
-                'email' => "customer@gmail.com",
-                'customer_address' => $request->address,
-                'customer_city' => $request->area,
-                'customer_state' => $request->area,
-                'customer_postcode' => "1212",
-                'customer_country' => "BD",
-                'value1' => $order->id
-            );
-            $shurjopay_service = new ShurjopayController();
-            return $shurjopay_service->checkout($info);
-        } else {
-            return redirect('customer/order-success/' . $order->id);
         }
+
+        return redirect('customer/order-success/' . $order->id);
     }
 
 
@@ -527,29 +504,6 @@ class CustomerController extends Controller
         // Redirect based on payment
         if ($request->payment_method == 'bkash') {
             return redirect('/bkash/checkout-url/create?order_id=' . $order->id);
-        }
-
-        if ($request->payment_method == 'shurjopay') {
-            $info = [
-                'currency' => "BDT",
-                'amount' => $order->amount,
-                'order_id' => uniqid(),
-                'discsount_amount' => 0,
-                'disc_percent' => 0,
-                'client_ip' => $request->ip(),
-                'customer_name' => $request->name,
-                'customer_phone' => $request->phone,
-                'email' => "customer@gmail.com",
-                'customer_address' => $request->address,
-                'customer_city' => $request->area,
-                'customer_state' => $request->area,
-                'customer_postcode' => "1212",
-                'customer_country' => "BD",
-                'value1' => $order->id
-            ];
-
-            $shurjopay_service = new ShurjopayController();
-            return $shurjopay_service->checkout($info);
         }
 
         return redirect('customer/order-success/' . $order->id);

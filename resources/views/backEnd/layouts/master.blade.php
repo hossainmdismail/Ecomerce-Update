@@ -140,14 +140,14 @@
                             <div class="dropdown-divider"></div>
 
                             <!-- item-->
-                            <a href="{{ route('logout') }}"
-                                onclick="event.preventDefault();
+                            <a href="{{ route('admin.logout') }}"
+                               onclick="event.preventDefault();
                   document.getElementById('logout-form').submit();"
-                                class="dropdown-item notify-item">
+                               class="dropdown-item notify-item">
                                 <i class="fe-log-out me-1"></i>
                                 <span>Logout</span>
                             </a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                            <form id="logout-form" action="{{ route('admin.logout') }}" method="POST"
                                 style="display: none;">
                                 @csrf
                             </form>
@@ -244,14 +244,14 @@
                             </a>
 
                             <!-- item-->
-                            <a href="{{ route('logout') }}"
+                            <a href="{{ route('admin.logout') }}"
                                 onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();"
                                 class="dropdown-item notify-item">
                                 <i class="fe-log-out me-1"></i>
                                 <span>Logout</span>
                             </a>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                            <form id="logout-form" action="{{ route('admin.logout') }}" method="POST"
                                 style="display: none;">
                                 @csrf
                             </form>

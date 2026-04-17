@@ -6,7 +6,7 @@ use App\Http\Controllers\Frontend\FrontendController;
 use App\Http\Controllers\Frontend\ShoppingController;
 use App\Http\Controllers\Frontend\CustomerController;
 use App\Http\Controllers\Frontend\BkashController;
-use App\Http\Controllers\Frontend\ShurjopayControllers;
+use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\UserController;
@@ -33,9 +33,6 @@ use App\Http\Controllers\Admin\ShippingChargeController;
 use App\Http\Controllers\Admin\ColorController;
 use App\Http\Controllers\Admin\SizeController;
 use App\Http\Controllers\Admin\TagManagerController;
-use App\Http\Controllers\Auth\LoginController;
-
-Auth::routes();
 
 Route::get('/cc', function() {
     Artisan::call('config:clear');
@@ -50,7 +47,7 @@ Route::get('/controller', function() {
     return "Controller Done!";
 });
 
-Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']], function() {
+Route::middleware(['ipcheck','check_refer'])->group(function () {
     Route::get('/', [FrontendController::class, 'index'])->name('home');
     Route::get('category/{category}', [FrontendController::class, 'category'])->name('category');
 
@@ -69,8 +66,6 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
     Route::get('districts', [FrontendController::class, 'districts'])->name('districts');
     Route::get('/campaign/{slug}', [FrontendController::class, 'campaign'])->name('campaign');
     Route::get('/offer', [FrontendController::class, 'offers'])->name('offers');
-     Route::get('/payment-success', [FrontEndController::class, 'payment_success'])->name('payment_success');
-    Route::get('/payment-cancel', [FrontEndController::class, 'payment_cancel'])->name('payment_cancel');
 
     // cart route
     Route::post('cart/store', [ShoppingController::class, 'cart_store'])->name('cart.store');
@@ -87,7 +82,7 @@ Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']
 
 });
 
-Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']], function() {
+Route::prefix('customer')->middleware(['ipcheck','check_refer'])->group(function () {
     Route::get('/login', [CustomerController::class, 'login'])->name('customer.login');
     Route::post('/signin', [CustomerController::class, 'signin'])->name('customer.signin');
     Route::get('/register', [CustomerController::class, 'register'])->name('customer.register');
@@ -113,7 +108,7 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend', 'middleware' => ['ip
 
 });
 // customer auth
-Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['customer','ipcheck','check_refer']], function() {
+Route::prefix('customer')->middleware(['customer','ipcheck','check_refer'])->group(function () {
 
     Route::get('/account', [CustomerController::class, 'account'])->name('customer.account');
 
@@ -127,18 +122,16 @@ Route::group(['prefix'=>'customer','namespace'=>'Frontend','middleware' => ['cus
 
 });
 
-Route::group(['namespace'=>'Frontend', 'middleware' => ['ipcheck','check_refer']], function() {
+Route::middleware(['ipcheck','check_refer'])->group(function () {
 
     Route::get('bkash/checkout-url/pay',[BkashController::class,'pay'])->name('url-pay');
-Route::any('bkash/checkout-url/create',[BkashController::class,'create'])->name('url-create');
-Route::get('bkash/checkout-url/callback',[BkashController::class,'callback'])->name('url-callback');
-    Route::get('/payment-success', [ShurjopayControllers::class, 'payment_success'])->name('payment_success');
-    Route::get('/payment-cancel', [ShurjopayControllers::class, 'payment_cancel'])->name('payment_cancel');
+    Route::any('bkash/checkout-url/create',[BkashController::class,'create'])->name('url-create');
+    Route::get('bkash/checkout-url/callback',[BkashController::class,'callback'])->name('url-callback');
 
 });
 
 // unathenticate admin route
-Route::group(['namespace'=>'Admin','prefix'=>'admin','middleware' => ['customer','ipcheck','check_refer']], function() {
+Route::prefix('admin')->middleware(['customer','ipcheck','check_refer'])->group(function () {
     Route::get('locked', [DashboardController::class, 'locked'])->name('locked');
     Route::post('unlocked', [DashboardController::class, 'unlocked'])->name('unlocked');
 });
@@ -148,7 +141,7 @@ Route::get('/ajax-product-subcategory', [ProductController::class, 'getSubcatego
 Route::get('/ajax-product-childcategory', [ProductController::class, 'getChildcategory']);
 
 // auth route
-Route::group(['namespace'=>'Admin','middleware' => ['auth','lock','check_refer'],'prefix'=>'admin'], function() {
+Route::prefix('admin')->middleware(['auth','lock','check_refer'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
     Route::get('change-password', [DashboardController::class, 'changepassword'])->name('change_password');
     Route::post('new-password', [DashboardController::class, 'newpassword'])->name('new_password');
@@ -461,7 +454,12 @@ Route::any('/register', fn() => abort(404));
 // ------------------------------
 // Admin login routes (guest only)
 // ------------------------------
-// Route::middleware('guest:web')->group(function () {
-//     Route::get('/deepanel/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
-//     Route::post('/deepanel/login', [LoginController::class, 'login']);
-// });
+Route::middleware('guest:web')->group(function () {
+    Route::get('/deepanel/login', [LoginController::class, 'showLoginForm'])->name('admin.login');
+    Route::post('/deepanel/login', [LoginController::class, 'login']);
+});
+
+// Admin logout route (authenticated users)
+Route::middleware('auth:web')->group(function () {
+    Route::post('/deepanel/logout', [LoginController::class, 'logout'])->name('admin.logout');
+});
